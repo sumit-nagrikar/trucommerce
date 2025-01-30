@@ -1,7 +1,20 @@
-import app from './app.js';
-import connectDB from './config/database.js';
+import app from './app.js'; // Import the app configuration
+import mongoose from 'mongoose';
 import { config } from './config/config.js';
 import logger from './config/logger.js'; // Import the logger
+
+// MongoDB Connection
+const connectDB = async () => {
+  try {
+    mongoose.connection.on('connected', () => {
+      console.log('DB Connected');
+    });
+    await mongoose.connect(config.mongoose.url);
+  } catch (error) {
+    logger.error(`❌ MongoDB connection error: ${error.message}`);
+    process.exit(1); // Exit if connection fails
+  }
+};
 
 // Connect to MongoDB
 connectDB();
@@ -42,7 +55,7 @@ process.on('unhandledRejection', (reason) => {
   exitHandler(reason);
 });
 
-// Handle SIGTERM (used in containerized environments like Docker)
+// Handle SIGTERM
 process.on('SIGTERM', () => {
   logger.info('📴 SIGTERM received. Shutting down gracefully...');
   if (server) {
