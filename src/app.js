@@ -1,4 +1,5 @@
 import express from 'express';
+import userRoutes from './routes/v1/user.routes';
 import cors from 'cors';
 
 const app = express();
@@ -11,5 +12,9 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Welcome to Trucommerce Backend');
 });
+
+// User routes
+
+app.use('/api/v1/users', userRoutes);
 
 export default app;
