@@ -1,58 +1,58 @@
-import httpStatus from 'http-status';
-import User from '../models/User';
-import ApiError from '../utils/ApiError';
+const httpStatus = require('http-status');
+const { User } = require('../models');
+const ApiError = require('../utils/ApiError');
 
-// Create a new user
+// Create a user
 const createUser = async (userBody) => {
-  // Check if email is already taken
   if (await User.isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    throw new ApiError(httpStatus.status.BAD_REQUEST, 'Email already taken');
   }
-  // Save the new user to the database
   return User.create(userBody);
 };
 
-// Find a user by their ID
+// get all users
+const queryUsers = async (filter, options) => {
+  const users = await User.paginate(filter, options);
+  return users;
+};
+
+// Get user by id
 const getUserById = async (id) => {
   return User.findById(id);
 };
 
-// Find a user by their email
+// Get user by email
 const getUserByEmail = async (email) => {
   return User.findOne({ email });
 };
 
-// Update a user details by their ID
+// Update user by id
 const updateUserById = async (userId, updateBody) => {
-  // Find the user by ID
   const user = await getUserById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  // Check if the new email is already taken
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
-  // Update the user's details
   Object.assign(user, updateBody);
-  await user.save(); // Save the updated details to the database
+  await user.save();
   return user;
 };
 
-// Delete a user by their ID
+// Delete user by id
 const deleteUserById = async (userId) => {
-  // Find the user by ID
   const user = await getUserById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  // Remove the user from the database
   await user.remove();
   return user;
 };
 
-export {
+module.exports = {
   createUser,
+  queryUsers,
   getUserById,
   getUserByEmail,
   updateUserById,

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const addressSchema = new mongoose.Schema(
   {
@@ -18,4 +18,4 @@ const addressSchema = new mongoose.Schema(
 const addressModel =
   mongoose.models.Address || mongoose.model('Address', addressSchema);
 
-export default addressModel;
+module.exports = addressModel;

@@ -1,21 +1,24 @@
-import jwt from 'jsonwebtoken';
-import moment from 'moment';
-import { config } from '../config/config';
-import Token from '../models/token';
-import { tokenTypes } from '../config/tokens';
+const jwt = require('jsonwebtoken');
+const moment = require('moment');
+const httpStatus = require('http-status');
+const config = require('../config/config');
+const userService = require('./user.service');
+const { Token } = require('../models');
+const ApiError = require('../utils/ApiError');
+const  tokenTypes  = require('../config/tokens');
 
-// Generates a new JWT token with user ID and expiration time
+// Generate token
 const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
   const payload = {
-    sub: userId, // Stores the user ID
-    iat: moment().unix(), // Token creation time
-    exp: expires.unix(), // Token expiration time
-    type, // Token type (ACCESS, REFRESH, etc from env variables)
+    sub: userId,
+    iat: moment().unix(),
+    exp: expires.unix(),
+    type,
   };
-  return jwt.sign(payload, secret); // use jwt.sign method and return tooken
+  return jwt.sign(payload, secret);
 };
 
-// Saves a token in the database (mainly for refresh tokens)
+// Save a token
 const saveToken = async (token, userId, expires, type, blacklisted = false) => {
   return await Token.create({
     token,
@@ -26,20 +29,20 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
   });
 };
 
-// Verifies if a token is valid and returns its details
+// Verify token and return token doc
 const verifyToken = async (token, type) => {
-  const payload = jwt.verify(token, config.jwt.secret); // Decodes the token
+  const payload = jwt.verify(token, config.jwt.secret);
   const tokenDoc = await Token.findOne({
     token,
     type,
-    user: payload.sub, // Checks if the token belongs to the user
-    blacklisted: false, // Ensures the token is not revoked
+    user: payload.sub,
+    blacklisted: false,
   });
-  if (!tokenDoc) throw new Error('Token not found'); // Throws error if token is invalid
+  if (!tokenDoc) throw new Error('Token not found');
   return tokenDoc;
 };
 
-// Generates access and refresh tokens for a user
+// Generate authentication tokens
 const generateAuthTokens = async (user) => {
   const accessTokenExpires = moment().add(
     config.jwt.accessExpirationMinutes,
@@ -60,7 +63,6 @@ const generateAuthTokens = async (user) => {
     refreshTokenExpires,
     tokenTypes.REFRESH
   );
-
   await saveToken(
     refreshToken,
     user.id,
@@ -74,4 +76,9 @@ const generateAuthTokens = async (user) => {
   };
 };
 
-export { generateToken, saveToken, verifyToken, generateAuthTokens };
+module.exports = {
+  generateToken,
+  saveToken,
+  verifyToken,
+  generateAuthTokens,
+};

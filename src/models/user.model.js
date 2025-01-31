@@ -1,10 +1,16 @@
-import mongoose from 'mongoose';
-import validator from 'validator';
-import { toJSON, paginate } from './plugins';
+const mongoose = require('mongoose');
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
+const { toJSON, paginate } = require('./plugins');
+const { roles } = require('../config/roles');
 
-const userSchema = new mongoose.Schema(
+const userSchema = mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     email: {
       type: String,
       required: true,
@@ -17,27 +23,33 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
-    validate(value) {
-      if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-        throw new Error(
-          'Password must contain at least one letter and one number'
-        );
-      }
-    },
-    role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
-    address: { type: mongoose.Schema.Types.ObjectId, ref: 'Address' }, // Reference to Address model
-    cart: [
-      {
-        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-        quantity: {
-          type: Number,
-          default: 1,
-          min: [1, 'Quantity cannot be less than 1'],
-        },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 8,
+      validate(value) {
+        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
+          throw new Error(
+            'Password must contain at least one letter and one number'
+          );
+        }
       },
-    ], // Array of products in cart
+      private: true, // used by the toJSON plugin
+    },
+    role: {
+      type: String,
+      enum: roles,
+      default: 'user',
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true, minimize: false }
+  {
+    timestamps: true,
+  }
 );
 
 // add plugin that converts mongoose to json
@@ -56,7 +68,6 @@ userSchema.methods.isPasswordMatch = async function (password) {
   return bcrypt.compare(password, user.password);
 };
 
-// Hash the password before saving it to the database
 userSchema.pre('save', async function (next) {
   const user = this;
   if (user.isModified('password')) {
@@ -65,6 +76,6 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-const user = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
 
-export default user;
+module.exports = User;
