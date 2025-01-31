@@ -1,7 +1,7 @@
-import app from './app.js'; // Import the app configuration
-import mongoose from 'mongoose';
-import { config } from './config/config.js';
-import logger from './config/logger.js'; // Import the logger
+const app = require('./app.js');
+const mongoose = require('mongoose');
+const config = require('./config/config.js');
+const logger = require('./config/logger.js');
 
 // MongoDB Connection
 const connectDB = async () => {
