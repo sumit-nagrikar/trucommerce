@@ -6,7 +6,7 @@ const pick = require('../utils/pick');
 
 const createUser = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
-  res.status(httpStatus.CREATED).send(user);
+  res.status(httpStatus.status.CREATED).send(user);
 });
 
 const getUsers = catchAsync(async (req, res) => {
@@ -19,7 +19,7 @@ const getUsers = catchAsync(async (req, res) => {
 const getUser = catchAsync(async (req, res) => {
   const user = await userService.getUserById(req.params.userId);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(httpStatus.status.NOT_FOUND, 'User not found');
   }
   res.send(user);
 });
@@ -31,7 +31,7 @@ const updateUser = catchAsync(async (req, res) => {
 
 const deleteUser = catchAsync(async (req, res) => {
   await userService.deleteUserById(req.params.userId);
-  res.status(httpStatus.NO_CONTENT).send();
+  res.status(httpStatus.status.NO_CONTENT).send();
 });
 
 module.exports = { createUser, getUsers, getUser, updateUser, deleteUser };
