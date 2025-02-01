@@ -23,6 +23,7 @@ const errorHandler = (err, req, res, next) => {
     statusCode = httpStatus.status.INTERNAL_SERVER_ERROR;
     message = httpStatus[httpStatus.status.INTERNAL_SERVER_ERROR];
   }
+  console.log("Final Status Code:", statusCode); // Debugging line
 
   res.locals.errorMessage = err.message;
 
@@ -36,7 +37,7 @@ const errorHandler = (err, req, res, next) => {
     logger.error(err);
   }
 
-  res.status(statusCode).send(response);
+  res.status(statusCode)?.send(response);
 };
 
 module.exports = {
