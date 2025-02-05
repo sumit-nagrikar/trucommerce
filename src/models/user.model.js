@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
-const { roles } = require('../config/roles');
+const Cart = require('./cart.model');
 
 const userSchema = mongoose.Schema(
   {
@@ -37,19 +37,9 @@ const userSchema = mongoose.Schema(
       },
       private: true, // used by the toJSON plugin
     },
-    role: {
-      type: String,
-      enum: roles,
-      default: 'user',
-    },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
+    cartData: { type: Object, default: {} },
   },
-  {
-    timestamps: true,
-  }
+  { minimize: false, timestamps: true }
 );
 
 // add plugin that converts mongoose to json
@@ -62,20 +52,19 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
   return !!user;
 };
 
-// Check if password matches the user's password
-userSchema.methods.isPasswordMatch = async function (password) {
-  const user = this;
-  return bcrypt.compare(password, user.password);
-};
-
-userSchema.pre('save', async function (next) {
-  const user = this;
-  if (user.isModified('password')) {
-    user.password = await bcrypt.hash(user.password, 8);
+// Automatically create an empty cart when a user registers
+userSchema.post('save', async function (doc, next) {
+  try {
+    if (!doc.cartData) {
+      const newCart = await Cart.create({ user: doc._id, items: [] });
+      await User.findByIdAndUpdate(doc._id, { cartData: newCart._id });
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 });
-  
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

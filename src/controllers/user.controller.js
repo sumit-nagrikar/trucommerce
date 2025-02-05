@@ -6,6 +6,7 @@ const pick = require('../utils/pick');
 
 const createUser = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
+  
   res.status(httpStatus.status.CREATED).send(user);
 });
 

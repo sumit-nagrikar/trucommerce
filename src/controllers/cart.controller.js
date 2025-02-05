@@ -1,8 +1,10 @@
 const catchAsync = require('../utils/catchAsync');
 const cartService = require('../services/cart.service');
+const logger = require('../config/logger');
 
 const getCart = catchAsync(async (req, res) => {
-    console.log("id:",req.user)
+    console.log("id:",req.user);
+    // logger.info(req.user);//id received undefined
   const cart = await cartService.getCart(req.user.id);
   res.json(cart);
 });

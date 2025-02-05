@@ -6,7 +6,15 @@ const register = {
     email: Joi.string().required().email(),
     password: Joi.string().required().custom(password),
     name: Joi.string().required(),
-    role: Joi.string().required().valid('user', 'admin'),
+    // role: Joi.string().required().valid('user', 'admin'),
+  }),
+};
+
+//for admin login
+const admin = {
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
   }),
 };
 
@@ -29,33 +37,10 @@ const refreshTokens = {
   }),
 };
 
-const forgotPassword = {
-  body: Joi.object().keys({
-    email: Joi.string().email().required(),
-  }),
-};
-
-const resetPassword = {
-  query: Joi.object().keys({
-    token: Joi.string().required(),
-  }),
-  body: Joi.object().keys({
-    password: Joi.string().required().custom(password),
-  }),
-};
-
-const verifyEmail = {
-  query: Joi.object().keys({
-    token: Joi.string().required(),
-  }),
-};
-
 module.exports = {
   register,
   login,
   logout,
   refreshTokens,
-  forgotPassword,
-  resetPassword,
-  verifyEmail,
+  admin,
 };

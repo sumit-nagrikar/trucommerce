@@ -1,17 +1,13 @@
 const httpStatus = require('http-status');
 const { User } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { roles } = require('../config/roles');
 
 // Create a user
 const createUser = async (userBody) => {
-  console.log('role', userBody.role);
+  // console.log('role', userBody.role);
   if (await User.isEmailTaken(userBody.email)) {
     throw new ApiError(httpStatus.status.BAD_REQUEST, 'Email already taken');
   }
-  // Ensure role is valid, default to "user" if not provided
-  userBody.role =
-    userBody.role && roles.includes(userBody.role) ? userBody.role : 'user';
 
   return User.create(userBody);
 };
