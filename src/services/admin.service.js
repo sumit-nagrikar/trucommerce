@@ -3,7 +3,6 @@ const { v4: uuidv4 } = require('uuid'); // UUID to generate a unique ID
 
 const adminLogin = async (email, password) => {
   const { email: adminEmail, password: adminPassword } = config.admin;
-  console.log(adminEmail, adminPassword);
 
   // Check if the email and password match the configured admin email and password
   if (email !== adminEmail || password !== adminPassword) {
@@ -21,7 +20,6 @@ const adminLogin = async (email, password) => {
     name: 'Admin User', // custom name
   };
 
-  console.log('Admin', admin);
   return admin;
 };
 
