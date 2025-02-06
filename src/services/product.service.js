@@ -27,7 +27,7 @@ const getProductById = async (id) => {
 const updateProduct = async (id, updateBody) => {
   const product = await Product.findByIdAndUpdate(id, updateBody, {
     new: true, // Return the updated document
-    runValidators: true, // Validate the data before saving
+    runValidators: true,
   });
   if (!product) {
     throw new ApiError(httpStatus.status.NOT_FOUND, 'Product not found');
