@@ -37,9 +37,8 @@ const userSchema = mongoose.Schema(
       },
       private: true, // used by the toJSON plugin
     },
-    cartData: { type: Object, default: {} },
   },
-  { minimize: false, timestamps: true }
+  { timestamps: true }
 );
 
 // add plugin that converts mongoose to json
