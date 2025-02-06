@@ -1,18 +1,29 @@
 const { v4: uuidv4 } = require('uuid');
-const jwt = require('jsonwebtoken'); // ✅ Ensure you have JWT
+const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const config = require('../config/config');
 const { Token } = require('../models');
 const tokenTypes = require('../config/tokens');
 
 // Generate token
-const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
+const generateToken = (
+  userId,
+  expires,
+  type,
+  role = null,
+  secret = config.jwt.secret
+) => {
   const payload = {
     sub: userId,
     iat: moment().unix(),
     exp: expires.unix(),
     type,
+    role,
   };
+  // Only include role if it's an access token & user is admin
+  if (type === tokenTypes.ACCESS && role === 'admin') {
+    payload.role = role;
+  }
   return jwt.sign(payload, secret);
 };
 
@@ -34,8 +45,7 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
 };
 
 const generateAuthTokens = async (user) => {
-  // If the user object don't have a valid id, create a new id
-  const userId = user.id || uuidv4();
+  const userId = user._id || uuidv4(); //if user dont have id, create a new one
 
   const accessTokenExpires = moment().add(
     config.jwt.accessExpirationMinutes,
@@ -44,7 +54,8 @@ const generateAuthTokens = async (user) => {
   const accessToken = generateToken(
     userId,
     accessTokenExpires,
-    tokenTypes.ACCESS
+    tokenTypes.ACCESS,
+    user.role === 'admin' ? user.role : null // only add role for admin
   );
 
   const refreshTokenExpires = moment().add(
@@ -57,22 +68,12 @@ const generateAuthTokens = async (user) => {
     tokenTypes.REFRESH
   );
 
-  // If user.id exists save to db
-  if (user.id) {
-    await saveToken(
-      refreshToken,
-      user.id,
-      refreshTokenExpires,
-      tokenTypes.REFRESH
-    );
-  } else {
-    const savedtoken = await saveToken(
-      refreshToken,
-      userId,
-      refreshTokenExpires,
-      tokenTypes.REFRESH
-    );
-  }
+  await saveToken(
+    refreshToken,
+    userId,
+    refreshTokenExpires,
+    tokenTypes.REFRESH
+  );
 
   return {
     access: { token: accessToken, expires: accessTokenExpires.toDate() },
