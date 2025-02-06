@@ -6,37 +6,38 @@ const getCart = async (userId) => {
 };
 
 const addToCart = async (userId, productId, quantity) => {
-  let cart = await Cart.findOne({ user: userId });
+  const cart = await Cart.findOneAndUpdate(
+    { user: userId, 'items.product': productId }, // Find users cart with productId
+    { $inc: { 'items.$.quantity': quantity } }, // Increase quantity
+    { new: true }
+  );
 
   if (!cart) {
-    cart = new Cart({ user: userId, items: [] });
+    return await Cart.findOneAndUpdate(
+      { user: userId },
+      { $push: { items: { product: productId, quantity } } }, // Add new item if cart is not present
+      { upsert: true, new: true }
+    );
   }
 
-  const productExists = cart.items.find(
-    (item) => item.product.toString() === productId
-  );
-  if (productExists) {
-    productExists.quantity += quantity;
-  } else {
-    cart.items.push({ product: productId, quantity });
-  }
-
-  cart.updatedAt = new Date();
-  await cart.save();
   return cart;
 };
 
 const removeFromCart = async (userId, productId) => {
   const cart = await Cart.findOne({ user: userId });
 
-  if (cart) {
-    cart.items = cart.items.filter(
-      (item) => item.product.toString() !== productId
-    );
-    cart.updatedAt = new Date();
-    await cart.save();
+  if (!cart) return null;
+
+  const filteredItems = cart.items.filter(
+    (item) => item.product.toString() !== productId
+  );
+
+  if (filteredItems.length === cart.items.length) {
+    return null; // if no item removed return null
   }
 
+  cart.items = filteredItems;
+  await cart.save();
   return cart;
 };
 
