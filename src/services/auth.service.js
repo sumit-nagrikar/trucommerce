@@ -9,10 +9,9 @@ const bcrypt = require('bcryptjs');
 
 const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await userService.getUserByEmail(email);
-  console.log('User', user);
   const isPasswordMatch = password === user.password;
 
-  console.log('Is password match', isPasswordMatch);
+  // console.log('Is password match', isPasswordMatch);
   if (!user || !isPasswordMatch) {
     throw new ApiError(
       httpStatus.status.UNAUTHORIZED,
@@ -46,7 +45,7 @@ const refreshAuth = async (refreshToken) => {
     );
 
     if (!refreshTokenDoc) {
-      console.log('Refresh token not found or blacklisted.');
+      // console.log('Refresh token not found or blacklisted.');
       throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid refresh token');
     }
 
